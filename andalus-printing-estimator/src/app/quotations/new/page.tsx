@@ -140,13 +140,13 @@ export default function NewQuotationPage() {
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 50);
 
     let yPos = 70;
-    doc.setFont(undefined, 'bold');
+    doc.setFontSize(12);
     doc.text('Item', 20, yPos);
     doc.text('Qty', 80, yPos);
     doc.text('Unit Price', 110, yPos);
     doc.text('Total', 160, yPos);
 
-    doc.setFont(undefined, 'normal');
+    doc.setFontSize(10);
     yPos += 10;
 
     items.forEach(item => {
@@ -158,12 +158,12 @@ export default function NewQuotationPage() {
     });
 
     yPos += 10;
-    doc.setFont(undefined, 'bold');
+    doc.setFontSize(12);
     doc.text(`Subtotal: ${subtotal.toFixed(2)} QAR`, 110, yPos);
     yPos += 10;
     doc.text(`VAT (${settings.vat_rate}%): ${vat.toFixed(2)} QAR`, 110, yPos);
     yPos += 10;
-    doc.setFont(undefined, 'bold');
+    doc.setFontSize(14);
     doc.text(`Total: ${total.toFixed(2)} QAR`, 110, yPos);
 
     doc.save(`quotation-${Date.now()}.pdf`);
