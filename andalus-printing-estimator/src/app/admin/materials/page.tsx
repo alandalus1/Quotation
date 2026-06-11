@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 interface Material {
@@ -25,39 +24,12 @@ export default function AdminMaterialsPage() {
 
   useEffect(() => {
     const fetchMaterials = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        router.push('/auth');
-        return;
-      }
-
-      // Check if user is admin
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profileError || profile?.role !== 'admin') {
-        router.push('/dashboard'); // Redirect non-admins
-        return;
-      }
-
-      const { data, error } = await supabase.from('materials').select('*');
-      if (error) {
-        setError(error.message);
-      } else {
-        setMaterials(data);
-      }
+      // Mock materials data
+      setMaterials([]);
       setLoading(false);
     };
 
     fetchMaterials();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth');
-      }
     });
 
     return () => {

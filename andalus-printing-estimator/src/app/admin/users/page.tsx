@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 interface UserProfile {
@@ -18,44 +17,12 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        router.push('/auth');
-        return;
-      }
-
-      // Check if user is admin
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profileError || profile?.role !== 'admin') {
-        router.push('/dashboard'); // Redirect non-admins
-        return;
-      }
-
-      // Fetch all users and their roles from the profiles table
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, email, role')
-        .neq('role', 'admin'); // Exclude admins from this list, or fetch all if needed
-
-      if (error) {
-        setError(error.message);
-      } else {
-        setUsers(data);
-      }
+      // Mock users data
+      setUsers([]);
       setLoading(false);
     };
 
     fetchUsers();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth');
-      }
     });
 
     return () => {
