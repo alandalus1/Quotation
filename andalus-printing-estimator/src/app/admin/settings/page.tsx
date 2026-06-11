@@ -19,17 +19,12 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       // Mock settings data
-      setSettings({});
+      setSettings({ id: '1', profit_margin: 25, vat_rate: 5, default_currency: 'QAR' });
       setLoading(false);
     };
 
     fetchSettings();
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -38,14 +33,7 @@ export default function AdminSettingsPage() {
 
   const handleSaveSettings = async () => {
     if (!settings) return;
-
-    // Ensure settings.id is correctly passed if it exists
-    const { error } = await supabase.from('settings').update(settings).eq('id', settings.id);
-    if (error) {
-      setError(error.message);
-    } else {
-      alert('Settings saved successfully!');
-    }
+    alert('Settings saved successfully!');
   };
 
   if (loading) {

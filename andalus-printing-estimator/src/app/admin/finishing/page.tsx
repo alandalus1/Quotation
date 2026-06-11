@@ -27,12 +27,7 @@ export default function AdminFinishingPage() {
     };
 
     fetchFinishingOptions();
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (

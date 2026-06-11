@@ -24,12 +24,7 @@ export default function AdminLabourPage() {
     };
 
     fetchLabourCharges();
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (

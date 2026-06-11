@@ -30,12 +30,7 @@ export default function AdminMaterialsPage() {
     };
 
     fetchMaterials();
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (

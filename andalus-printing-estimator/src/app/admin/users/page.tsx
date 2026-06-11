@@ -23,12 +23,7 @@ export default function AdminUsersPage() {
     };
 
     fetchUsers();
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (
