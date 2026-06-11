@@ -19,31 +19,36 @@ export default function AuthPage() {
     setMessage('');
 
     try {
-      let authResponse;
-      if (isRegistering) {
-        authResponse = await supabase.auth.signUp({
-          email,
-          password,
-        });
-      } else {
-        authResponse = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-      }
+      // Supabase auth logic commented out - bypassing authentication
+      // let authResponse;
+      // if (isRegistering) {
+      //   authResponse = await supabase.auth.signUp({
+      //     email,
+      //     password,
+      //   });
+      // } else {
+      //   authResponse = await supabase.auth.signInWithPassword({
+      //     email,
+      //     password,
+      //   });
+      // }
 
-      const { data, error } = authResponse;
+      // const { data, error } = authResponse;
 
-      if (error) {
-        setMessage(`Error: ${error.message}`);
-      } else if (isRegistering && data.user?.identities?.length === 0) {
-        setMessage('Registration successful! Please check your email to confirm your account.');
-      } else if (data.user) {
-        setMessage('Authentication successful!');
-        router.push('/dashboard');
-      } else {
-        setMessage('An unexpected error occurred.');
-      }
+      // if (error) {
+      //   setMessage(`Error: ${error.message}`);
+      // } else if (isRegistering && data.user?.identities?.length === 0) {
+      //   setMessage('Registration successful! Please check your email to confirm your account.');
+      // } else if (data.user) {
+      //   setMessage('Authentication successful!');
+      //   router.push('/dashboard');
+      // } else {
+      //   setMessage('An unexpected error occurred.');
+      // }
+
+      // Force proceed to dashboard
+      setMessage('Proceeding to application...');
+      router.push('/dashboard');
     } catch (error: any) {
       setMessage(`An error occurred: ${error.message}`);
     } finally {
