@@ -1,31 +1,28 @@
 'use client';
 
-import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    // Check if user is logged in (localStorage-based)
+    const sessionEmail = localStorage.getItem('userEmail');
+    if (sessionEmail) {
+      setIsLoggedIn(true);
+      setUserEmail(sessionEmail);
+    }
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+  const handleLogout = () => {
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('isAuthenticated');
+    setIsLoggedIn(false);
+    setUserEmail(null);
     router.push('/auth');
   };
 
@@ -36,7 +33,7 @@ export default function Navbar() {
           Al Andalus Printing Estimator
         </Link>
         <div className="flex space-x-4 items-center">
-          {user ? (
+          {isLoggedIn ? (
             <>
               <Link href="/dashboard" className="hover:text-gold-300 transition duration-300">
                 Dashboard
@@ -53,6 +50,7 @@ export default function Navbar() {
               <Link href="/admin" className="hover:text-gold-300 transition duration-300">
                 Admin
               </Link>
+              <span className="text-sm text-gray-200">{userEmail}</span>
               <button onClick={handleLogout} className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-700 transition duration-300">
                 Logout
               </button>
