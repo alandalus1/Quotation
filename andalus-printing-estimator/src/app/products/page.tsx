@@ -1,21 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { mockData, mockDataOperations } from '@/lib/mockData';
 
 interface Product {
   id: string;
   name: string;
-  category: string | null;
-  description: string | null;
-  base_price: number | null;
+  category: string;
+  base_price: number;
 }
-
-const CATEGORIES = [
-  'Commercial Printing',
-  'Packaging',
-  'Large Format',
-];
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -24,19 +17,16 @@ export default function ProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
-  const router = useRouter();
 
   const [formData, setFormData] = useState({
     name: '',
-    category: 'Commercial Printing',
-    description: '',
+    category: 'Stationery',
     base_price: '',
   });
 
   useEffect(() => {
     const fetchProducts = async () => {
-      // Mock products data
-      setProducts([]);
+      setProducts(mockData.products);
       setLoading(false);
     };
 
@@ -47,8 +37,7 @@ export default function ProductsPage() {
     setEditingProduct(null);
     setFormData({
       name: '',
-      category: 'Commercial Printing',
-      description: '',
+      category: 'Stationery',
       base_price: '',
     });
     setShowModal(true);
@@ -58,8 +47,7 @@ export default function ProductsPage() {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      category: product.category || 'Commercial Printing',
-      description: product.description || '',
+      category: product.category,
       base_price: product.base_price?.toString() || '',
     });
     setShowModal(true);
@@ -76,19 +64,16 @@ export default function ProductsPage() {
     const payload = {
       name: formData.name,
       category: formData.category,
-      description: formData.description,
-      base_price: formData.base_price ? parseFloat(formData.base_price) : null,
+      base_price: formData.base_price ? parseFloat(formData.base_price) : 0,
     };
 
     try {
       if (editingProduct) {
-        setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...payload, base_price: payload.base_price } : p));
+        mockDataOperations.updateProduct(editingProduct.id, payload);
+        setProducts(mockData.products);
       } else {
-        const newProduct: Product = {
-          id: Date.now().toString(),
-          ...payload
-        };
-        setProducts([...products, newProduct].sort((a, b) => a.name.localeCompare(b.name)));
+        mockDataOperations.addProduct(payload);
+        setProducts(mockData.products);
       }
 
       setShowModal(false);
@@ -101,7 +86,8 @@ export default function ProductsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
-    setProducts(products.filter(p => p.id !== id));
+    mockDataOperations.deleteProduct(id);
+    setProducts(mockData.products);
   };
 
   if (loading) {
@@ -140,26 +126,24 @@ export default function ProductsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Price (QAR)</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Price (QAR)</th>
+                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                        {product.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{product.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.base_price ? `QAR ${product.base_price.toFixed(2)}` : '-'}
-                    </td>
+                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                       <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                         {product.category}
+                       </span>
+                     </td>
+                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                       QAR {product.base_price.toFixed(2)}
+                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                       <button onClick={() => openEditModal(product)} className="text-blue-600 hover:text-blue-900">
                         Edit
@@ -186,56 +170,44 @@ export default function ProductsPage() {
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g. Business Cards"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Product description"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (QAR)</label>
-                <input
-                  type="number"
-                  name="base_price"
-                  value={formData.base_price}
-                  onChange={handleChange}
-                  step="0.01"
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="0.00"
-                />
-              </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                 <input
+                   type="text"
+                   name="name"
+                   value={formData.name}
+                   onChange={handleChange}
+                   required
+                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="e.g. Business Cards"
+                 />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                 <input
+                   type="text"
+                   name="category"
+                   value={formData.category}
+                   onChange={handleChange}
+                   required
+                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="e.g. Stationery"
+                 />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (QAR)</label>
+                 <input
+                   type="number"
+                   name="base_price"
+                   value={formData.base_price}
+                   onChange={handleChange}
+                   step="0.01"
+                   min="0"
+                   required
+                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   placeholder="0.00"
+                 />
+               </div>
 
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                 <button
