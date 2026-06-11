@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 interface Customer {
@@ -37,33 +36,13 @@ export default function CustomersPage() {
 
   useEffect(() => {
     const fetchCustomers = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        router.push('/auth');
-        return;
-      }
-
-      const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
-      if (error) {
-        setError(error.message);
-      } else {
-        setCustomers(data || []);
-      }
+      // Mock customers data
+      setCustomers([]);
       setLoading(false);
     };
 
     fetchCustomers();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth');
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   const openAddModal = () => {
     setEditingCustomer(null);
@@ -103,24 +82,13 @@ export default function CustomersPage() {
 
     try {
       if (editingCustomer) {
-        const { error } = await supabase
-          .from('customers')
-          .update(formData)
-          .eq('id', editingCustomer.id);
-
-        if (error) throw error;
-
         setCustomers(customers.map(c => c.id === editingCustomer.id ? { ...c, ...formData } : c));
       } else {
-        const { data, error } = await supabase
-          .from('customers')
-          .insert([formData])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        setCustomers([data, ...customers]);
+        const newCustomer: Customer = {
+          id: Date.now().toString(),
+          ...formData
+        };
+        setCustomers([newCustomer, ...customers]);
       }
 
       setShowModal(false);
@@ -133,13 +101,7 @@ export default function CustomersPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this customer?')) return;
-
-    const { error } = await supabase.from('customers').delete().eq('id', id);
-    if (error) {
-      alert('Error deleting customer: ' + error.message);
-    } else {
-      setCustomers(customers.filter(c => c.id !== id));
-    }
+    setCustomers(customers.filter(c => c.id !== id));
   };
 
   if (loading) {

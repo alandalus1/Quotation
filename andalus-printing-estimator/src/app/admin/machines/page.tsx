@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 interface Machine {
@@ -22,45 +21,13 @@ export default function AdminMachinesPage() {
 
   useEffect(() => {
     const fetchMachines = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        router.push('/auth');
-        return;
-      }
-
-      // Check if user is admin
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profileError || profile?.role !== 'admin') {
-        router.push('/dashboard'); // Redirect non-admins
-        return;
-      }
-
-      const { data, error } = await supabase.from('machines').select('*');
-      if (error) {
-        setError(error.message);
-      } else {
-        setMachines(data);
-      }
+      // Mock machines data
+      setMachines([]);
       setLoading(false);
     };
 
     fetchMachines();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth');
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (

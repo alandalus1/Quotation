@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 interface Quotation {
@@ -12,7 +11,7 @@ interface Quotation {
   total_amount: number | null;
   vat_amount: number | null;
   created_at: string;
-  customer_name?: string; // Joined from customers table
+  customer_name?: string;
 }
 
 export default function QuotationsPage() {
@@ -23,46 +22,13 @@ export default function QuotationsPage() {
 
   useEffect(() => {
     const fetchQuotations = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        router.push('/auth');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('quotations')
-        .select(`
-          *,
-          customers (
-            company_name
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        setError(error.message);
-      } else {
-        const formattedQuotations = data.map(q => ({
-          ...q,
-          customer_name: q.customers?.company_name || 'N/A'
-        }));
-        setQuotations(formattedQuotations);
-      }
+      // Mock quotations data
+      setQuotations([]);
       setLoading(false);
     };
 
     fetchQuotations();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth');
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (

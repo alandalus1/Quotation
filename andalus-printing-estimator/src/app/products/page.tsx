@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 interface Product {
@@ -36,33 +35,13 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        router.push('/auth');
-        return;
-      }
-
-      const { data, error } = await supabase.from('products').select('*').order('name', { ascending: true });
-      if (error) {
-        setError(error.message);
-      } else {
-        setProducts(data || []);
-      }
+      // Mock products data
+      setProducts([]);
       setLoading(false);
     };
 
     fetchProducts();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth');
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+  }, []);
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -103,24 +82,13 @@ export default function ProductsPage() {
 
     try {
       if (editingProduct) {
-        const { error } = await supabase
-          .from('products')
-          .update(payload)
-          .eq('id', editingProduct.id);
-
-        if (error) throw error;
-
         setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...payload, base_price: payload.base_price } : p));
       } else {
-        const { data, error } = await supabase
-          .from('products')
-          .insert([payload])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        setProducts([...products, data].sort((a, b) => a.name.localeCompare(b.name)));
+        const newProduct: Product = {
+          id: Date.now().toString(),
+          ...payload
+        };
+        setProducts([...products, newProduct].sort((a, b) => a.name.localeCompare(b.name)));
       }
 
       setShowModal(false);
@@ -133,13 +101,7 @@ export default function ProductsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
-
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-      alert('Error deleting product: ' + error.message);
-    } else {
-      setProducts(products.filter(p => p.id !== id));
-    }
+    setProducts(products.filter(p => p.id !== id));
   };
 
   if (loading) {

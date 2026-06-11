@@ -1,51 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 export default function AdminPage() {
-  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const checkUserAndRole = async () => {
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError || !session) {
-        router.push('/auth');
-        return;
-      }
-
-      setUser(session.user);
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profileError || profile?.role !== 'admin') {
-        router.push('/dashboard'); // Redirect non-admins
-      } else {
-        setIsAdmin(true);
-      }
-      setLoading(false);
-    };
-
-    checkUserAndRole();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth');
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [router]);
+    // Mock admin access
+    setLoading(false);
+  }, []);
 
   if (loading) {
     return (
@@ -53,10 +18,6 @@ export default function AdminPage() {
         <p className="text-xl">Loading admin panel...</p>
       </div>
     );
-  }
-
-  if (!isAdmin) {
-    return null; // Should redirect, but render nothing in case of delay
   }
 
   return (
